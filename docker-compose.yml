@@ -47,7 +47,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-Muelle_App_2026}
       META_REGISTROS: 15
     ports:
-      - "${WEB_PORT:-8080}:3000"
+      - "127.0.0.1:${WEB_PORT:-8080}:3000"   # solo accesible desde este equipo
     depends_on:
       db:
         condition: service_healthy # espera a que MySQL esté listo, no solo iniciado

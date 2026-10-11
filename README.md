@@ -137,10 +137,20 @@ La prueba de persistencia está en la sección 3 del recorrido guiado: se destru
 - **Red interna** para MySQL: sin puertos publicados, solo alcanzable desde el contenedor web por DNS de Docker.
 - **Volumen con nombre** para la persistencia, independiente del ciclo de vida de los contenedores.
 - **Mínimo privilegio** en MySQL y **consultas parametrizadas** contra inyección SQL.
+- **Protección CSRF** sin sesiones: las peticiones que modifican datos se rechazan (403) si el navegador indica, con `Sec-Fetch-Site` u `Origin`, que vienen de otro sitio.
+- Puerto publicado **solo en `127.0.0.1`**: la aplicación no queda expuesta a otros equipos de la red.
 - Validación en el navegador y en el servidor, replicando las restricciones CHECK de la base de datos.
 - **Apagado ordenado**: la app atiende SIGTERM (`docker stop`) y cierra sus conexiones antes de salir; `init: true` agrega un PID 1 que reenvía señales.
 - Configuración por **variables de entorno**, sin secretos en el código.
 - `.gitattributes` fuerza finales de línea LF en scripts que corren en Linux, para que el proyecto funcione aunque se clone en Windows.
+
+## Seguridad y alcance
+
+Muelle es un laboratorio académico pensado para ejecutarse en el equipo local. Por eso:
+
+- **No tiene autenticación de usuarios.** Cualquiera que acceda a la interfaz puede crear y eliminar registros. Se mitiga publicando el puerto solo en `127.0.0.1` y rechazando peticiones de otros sitios (CSRF). En un despliegue real habría que agregar inicio de sesión, por ejemplo con un proveedor OIDC detrás de un proxy inverso.
+- **Las credenciales por defecto de `docker-compose.yml` son públicas** y sirven solo para desarrollo. Para cualquier otro uso, define valores propios en `.env` (ver `.env.example`) antes del primer arranque o, mejor, usa Docker secrets: la aplicación ya admite `DB_PASSWORD_FILE` y la imagen de MySQL admite `MYSQL_PASSWORD_FILE`.
+- MySQL no publica puertos y solo es alcanzable por la red interna de Docker.
 
 ## Autor:
 

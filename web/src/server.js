@@ -58,6 +58,25 @@ app.use((req, res, next) => {
   next();
 });
 
+// Protección CSRF sin sesiones: toda petición que modifica datos debe venir
+// del mismo origen. Se usan las cabeceras que el navegador envía solo
+// (Sec-Fetch-Site y Origin), que una página externa no puede falsificar.
+// Herramientas como curl no envían esas cabeceras y siguen funcionando.
+app.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const sitio = req.get('sec-fetch-site');
+  const origen = req.get('origin');
+  let mismoOrigen = true;
+  if (sitio) mismoOrigen = sitio === 'same-origin' || sitio === 'none';
+  else if (origen) {
+    try { mismoOrigen = new URL(origen).host === req.get('host'); } catch { mismoOrigen = false; }
+  }
+  if (mismoOrigen) return next();
+  console.warn(`[seguridad] Petición ${req.method} ${req.originalUrl} rechazada: origen cruzado (${origen || sitio})`);
+  if (req.path.startsWith('/api')) return res.status(403).json({ error: 'Petición de otro sitio rechazada (CSRF)' });
+  return res.status(403).render('error', { titulo: 'Petición rechazada', codigo: 403, detalle: 'Los datos solo se pueden modificar desde las páginas de Muelle.', aviso: null });
+});
+
 // Salud: liveness (el proceso responde) y readiness (además llega a MySQL)
 app.get('/health', (req, res) => res.json({ estado: 'ok', contenedor: os.hostname(), uptime_s: Math.round(process.uptime()) }));
 app.get('/ready', async (req, res) => {
