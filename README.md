@@ -12,6 +12,7 @@
 [![Actividad](https://img.shields.io/badge/Actividad-Sumativa%20Unidad%202-E36209.svg)]()
 [![Servicios](https://img.shields.io/badge/Servicios-2%20contenedores%20%C2%B7%202%20redes%20%C2%B7%201%20volumen-150458.svg)]()
 [![Comandos](https://img.shields.io/badge/Comandos%20Docker-47%20distintos%20%C2%B7%2062%20ejecuciones-2496ED.svg)]()
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Funcional-success.svg)]()
 
 **[Contexto](#-contexto-y-alcance) • [Contenido](#-contenido-del-repositorio) • [Tecnologías](#-tecnologías-utilizadas) • [Arquitectura](#️-arquitectura) • [Ejecución](#-ejecución) • [Pruebas](#-pruebas) • [Autor](#-autor)**
@@ -41,6 +42,7 @@
 - [✅ Buenas Prácticas Aplicadas](#-buenas-prácticas-aplicadas)
 - [🔐 Seguridad y Alcance](#-seguridad-y-alcance)
 - [📝 Nota](#-nota)
+- [⚖️ Licencia](#️-licencia)
 - [👤 Autor](#-autor)
 
 ---
@@ -72,6 +74,8 @@ La base de datos sigue un modelo entidad-relación **1:N** entre dos tablas de *
   <tr><th>Elemento</th><th>Descripción</th></tr>
   <tr><td colspan="2"><b>📂 raíz</b></td></tr>
   <tr><td><code>docker-compose.yml</code></td><td>🐳 Orquesta los <b>2 contenedores</b> con dos redes (la de la base de datos es interna y no publica puertos), un volumen con nombre, healthchecks, arranque ordenado y límites de CPU y memoria</td></tr>
+  <tr><td><code>README.md</code></td><td>📄 Este documento</td></tr>
+  <tr><td><code>LICENSE</code></td><td>⚖️ Licencia MIT</td></tr>
   <tr><td><code>.env.example</code></td><td>🔑 Plantilla para cambiar puerto y credenciales sin tocar el compose</td></tr>
   <tr><td><code>.gitattributes</code></td><td>↩️ Fuerza finales de línea LF en los scripts que corren en Linux</td></tr>
   <tr><td><code>.gitignore</code></td><td>🚫 Mantiene en local el material académico, <code>node_modules</code> y los archivos <code>.env</code></td></tr>
@@ -347,11 +351,17 @@ Este proyecto corresponde a una **actividad académica** y se elaboró con fines
 
 ---
 
+## ⚖️ Licencia
+
+Este proyecto se distribuye bajo la **Licencia MIT**. Consulta el archivo [`LICENSE`](LICENSE) para más detalles.
+
+---
+
 ## 👤 Autor
 
 <div align="center">
 
-Este proyecto fue desarrollado en el marco del módulo **Contenerización de Aplicaciones de Software** de la **Maestría en Arquitectura de Software** del **Politécnico Grancolombiano** (Bogotá, Colombia).
+Este proyecto fue desarrollado en el marco del módulo **Contenerización de Aplicaciones de Software** de la **Maestría en Arquitectura de Software** del **Politécnico Grancolombiano** (Bogotá, Colombia), bajo la orientación del docente **Victor Augusto Pedraza Bonilla**.
 
 | Autor | Perfil |
 |:---:|:---:|
