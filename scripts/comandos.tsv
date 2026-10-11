@@ -1,0 +1,63 @@
+# seccion|componente|comando|explicacion
+1|Cliente y daemon|docker version|Muestra la versión del cliente (CLI) y del servidor (dockerd). Son dos programas distintos que hablan por la API REST.
+1|Cliente y daemon|docker info|Estado del daemon: contenedores, imágenes, driver de almacenamiento, cgroups y recursos del host.
+1|Cliente y daemon|docker context ls|Lista los daemons a los que el cliente puede conectarse. Un mismo cliente puede manejar daemons locales o remotos.
+1|Registro|docker search nginx --limit 5|Busca imágenes en el registro público (Docker Hub).
+1|Registro|docker pull hello-world|Descarga una imagen del registro al host local, capa por capa.
+1|Registro|docker run --rm hello-world|run = pull (si falta) + create + start. --rm borra el contenedor al terminar.
+1|Imágenes|docker build -t hola-poli:1.0 ./demo-imagen|CREA una imagen propia a partir de un Dockerfile. Cada instrucción genera una capa.
+1|Imágenes|docker images|Lista las imágenes locales con su etiqueta, ID y tamaño.
+1|Imágenes|docker history hola-poli:1.0|Muestra las capas de la imagen y la instrucción que creó cada una.
+1|Imágenes|docker image inspect hola-poli:1.0 --format "{{.Config.Labels}}"|Metadatos de la imagen en JSON; aquí solo las etiquetas LABEL.
+1|Imágenes|docker tag hola-poli:1.0 hola-poli:latest|Agrega otra etiqueta a la misma imagen (mismo ID, sin copiar datos).
+1|Contenedores|docker create --name hola -p 8081:80 hola-poli:1.0|CREA un contenedor sin iniciarlo (estado Created). Publica el puerto 80 en el 8081 del equipo.
+1|Contenedores|docker ps -a|Lista todos los contenedores, también los detenidos o solo creados.
+1|Contenedores|docker start hola|Inicia el contenedor creado: pasa a estado Running. Abre http://localhost:8081
+1|Contenedores|docker ps|Lista solo los contenedores en ejecución.
+1|Contenedores|docker logs hola|Salida estándar del proceso principal del contenedor (aquí, los accesos de nginx).
+1|Contenedores|docker exec hola ls -l /usr/share/nginx/html|Ejecuta un comando dentro del contenedor en marcha.
+1|Contenedores|docker top hola|Procesos que corren dentro del contenedor, vistos desde el host.
+1|Contenedores|docker stats --no-stream hola|Consumo de CPU, memoria, red y disco del contenedor (medido por cgroups).
+1|Contenedores|docker port hola|Mapeo de puertos entre el contenedor y el equipo.
+1|Contenedores|docker pause hola|Congela todos los procesos (señal SIGSTOP vía cgroup freezer). La memoria se conserva.
+1|Contenedores|docker unpause hola|Reanuda los procesos congelados.
+1|Contenedores|docker rename hola hola-poli|Cambia el nombre del contenedor.
+1|Contenedores|docker restart hola-poli|Detiene e inicia de nuevo el contenedor.
+1|Contenedores|docker cp ./demo-imagen/index.html hola-poli:/tmp/copia.html|Copia archivos entre el equipo y el contenedor.
+1|Contenedores|docker diff hola-poli|Cambios en la capa escribible del contenedor (A = agregado, C = cambiado, D = borrado).
+1|Contenedores|docker inspect hola-poli --format "{{.State.Status}} {{.NetworkSettings.IPAddress}}"|Detalle completo del contenedor; aquí su estado y su IP en la red bridge.
+1|Contenedores|docker stop hola-poli|Detiene el contenedor: SIGTERM y, si no termina en 10 s, SIGKILL.
+1|Contenedores|docker rm hola-poli|ELIMINA el contenedor detenido.
+1|Contenedores|docker run -d --name efimero hola-poli:1.0|Crea e inicia un segundo contenedor en segundo plano (-d).
+1|Contenedores|docker kill efimero|Termina el proceso de inmediato con SIGKILL, sin apagado ordenado.
+1|Contenedores|docker rm efimero|Elimina el contenedor terminado.
+1|Imágenes|docker rmi hola-poli:latest hola-poli:1.0|ELIMINA la imagen (sus dos etiquetas). Solo se puede si ningún contenedor la usa.
+1|Volúmenes|docker volume create vol-prueba|Crea un volumen: almacenamiento que vive fuera del ciclo de vida del contenedor.
+1|Volúmenes|docker volume ls|Lista los volúmenes.
+1|Volúmenes|docker volume inspect vol-prueba|Detalle del volumen, incluido su punto de montaje en el host.
+1|Volúmenes|docker volume rm vol-prueba|Elimina el volumen.
+1|Redes|docker network ls|Lista las redes: bridge, host, none y las creadas por el usuario.
+1|Redes|docker network create red-prueba|Crea una red bridge propia, con DNS interno entre contenedores.
+1|Redes|docker network inspect red-prueba|Detalle de la red: subred, puerta de enlace y contenedores conectados.
+1|Redes|docker network rm red-prueba|Elimina la red.
+1|Sistema|docker system df|Espacio que ocupan imágenes, contenedores, volúmenes y caché de construcción.
+2|Compose|docker compose config --services|Valida docker-compose.yml y lista sus servicios.
+2|Compose|docker compose build|Construye las dos imágenes del proyecto: muelle-db y muelle-web.
+2|Imágenes|docker images muelle-*|Las dos imágenes recién creadas.
+2|Compose|docker compose up -d|Crea redes, volumen y contenedores; db primero y web cuando db está sano.
+2|Compose|docker compose ps|Estado de los servicios; espera a que ambos digan (healthy).
+2|Compose|docker compose logs --tail 15 db|Registro de MySQL: ejecución de los scripts de /docker-entrypoint-initdb.d.
+2|Compose|docker compose logs --tail 10 web|Registro de Node.js: conexión con la base y puerto en escucha.
+2|Compose|docker compose exec db mysql -umuelle_app -pMuelle_App_2026 muelle -e "SHOW TABLES"|Consulta directa a MySQL dentro de su contenedor.
+2|Compose|docker compose exec web id|El proceso web corre como usuario node (uid 1000), no como root.
+2|Redes|docker network inspect muelle_interna --format "{{range .Containers}}{{.Name}} {{.IPv4Address}} {{end}}"|Contenedores conectados a la red interna y sus IP.
+2|Volúmenes|docker volume inspect muelle_datos|Volumen donde MySQL guarda los datos (/var/lib/mysql).
+3|Persistencia|docker compose exec db mysql -umuelle_app -pMuelle_App_2026 muelle -e "SELECT COUNT(*) AS aplicaciones FROM aplicaciones; SELECT COUNT(*) AS despliegues FROM despliegues"|Cuántos registros hay en MySQL antes de destruir los contenedores.
+3|Persistencia|docker compose stop web|Detiene el contenedor web. Node recibe SIGTERM y se apaga de forma ordenada.
+3|Persistencia|docker compose logs --tail 4 web|Evidencia del apagado ordenado (mensaje SIGTERM recibido).
+3|Persistencia|docker compose down|ELIMINA los contenedores y las redes. El volumen muelle_datos NO se borra.
+3|Persistencia|docker ps -a|Ya no existe ningún contenedor de Muelle.
+3|Persistencia|docker volume ls|El volumen muelle_datos sigue ahí con los datos.
+3|Persistencia|docker compose up -d|Crea contenedores NUEVOS (otros ID) que montan el mismo volumen.
+3|Persistencia|docker compose ps|Espera a que ambos servicios estén (healthy).
+3|Persistencia|docker compose exec db mysql -umuelle_app -pMuelle_App_2026 muelle -e "SELECT COUNT(*) AS aplicaciones FROM aplicaciones; SELECT COUNT(*) AS despliegues FROM despliegues"|Mismos conteos: los datos sobrevivieron a la destrucción de los contenedores.

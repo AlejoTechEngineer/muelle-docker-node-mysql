@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= titulo %> | Muelle</title>
+  <meta name="description" content="Muelle: registro de aplicaciones y despliegues contenerizados con Docker, Node.js y MySQL.">
+  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/fonts/barlow-condensed/600.css">
+  <link rel="stylesheet" href="/fonts/barlow-condensed/700.css">
+  <link rel="stylesheet" href="/fonts/ibm-plex-sans/400.css">
+  <link rel="stylesheet" href="/fonts/ibm-plex-sans/500.css">
+  <link rel="stylesheet" href="/fonts/ibm-plex-sans/600.css">
+  <link rel="stylesheet" href="/fonts/ibm-plex-mono/400.css">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header class="barra">
+  <div class="barra__interior">
+    <a class="marca" href="/" aria-label="Muelle, ir al inicio">
+      <svg class="marca__icono" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="17" width="13" height="10" rx="1"/><rect x="17" y="17" width="13" height="10" rx="1"/><rect x="9.5" y="5" width="13" height="10" rx="1"/></svg>
+      <span class="marca__nombre">Muelle</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <% const enlaces = [['/', 'Inicio'], ['/aplicaciones/nueva', 'Registrar aplicación'], ['/despliegues/nuevo', 'Registrar despliegue'], ['/registros', 'Registros'], ['/sistema', 'Contenedores']]; %>
+      <% enlaces.forEach(([href, txt]) => { %>
+        <a href="<%= href %>" <% if (ruta === href) { %>aria-current="page"<% } %>><%= txt %></a>
+      <% }) %>
+    </nav>
+    <a class="chip-contenedor" href="/sistema" title="ID del contenedor que respondió esta página">
+      <span class="chip-contenedor__punto" aria-hidden="true"></span>
+      <span>Contenedor <code><%= contenedor %></code></span>
+    </a>
+  </div>
+</header>
+<% if (aviso) { %>
+  <div class="aviso aviso--<%= aviso.tipo %>" role="<%= aviso.tipo === 'error' ? 'alert' : 'status' %>">
+    <p><%= aviso.texto %></p>
+    <button type="button" class="aviso__cerrar" data-cerrar-aviso aria-label="Cerrar aviso">×</button>
+  </div>
+<% } %>
+<main id="principal" class="principal">

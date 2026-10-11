@@ -1,0 +1,83 @@
+<%- include('partials/cabeza') %>
+<div class="encabezado-pagina">
+  <h1>Contenedores en ejecución</h1>
+  <p>Lo que cada proceso ve desde adentro de su contenedor. El nombre de host que Docker asigna es el ID corto del contenedor: compáralo con la salida de <code>docker ps</code>.</p>
+</div>
+
+<figure class="topologia panel" aria-label="Topología del despliegue">
+  <ol class="topologia__nodos">
+    <li class="nodo nodo--host"><span class="nodo__rol">Tu equipo</span><strong>Navegador</strong><span>localhost:8080</span></li>
+    <li class="nodo nodo--web"><span class="nodo__rol">Contenedor web</span><strong>Node.js + Express</strong><code><%= web.hostname %></code><span>red muelle_frontal y muelle_interna</span></li>
+    <li class="nodo nodo--db"><span class="nodo__rol">Contenedor db</span><strong>MySQL <%= servidorDb.version %></strong><code><%= servidorDb.hostname %></code><span>solo red muelle_interna</span></li>
+    <li class="nodo nodo--vol"><span class="nodo__rol">Volumen</span><strong>muelle_datos</strong><span>/var/lib/mysql</span></li>
+  </ol>
+  <figcaption>El puerto 8080 del equipo se publica hacia el 3000 del contenedor web. MySQL no publica puertos: solo el contenedor web lo alcanza por DNS interno (<code>db</code> resuelve a <code><%= web.ipDb %></code>).</figcaption>
+</figure>
+
+<div class="dos-columnas dos-columnas--iguales">
+  <section class="panel">
+    <h2>Contenedor web</h2>
+    <p class="estado <%= web.enDocker ? 'estado--ok' : 'estado--alerta' %>"><%= web.enDocker ? 'Ejecutándose dentro de Docker: existe /.dockerenv' : 'No se detectó Docker: este proceso corre directamente en el equipo' %></p>
+    <dl class="ficha">
+      <div><dt>ID del contenedor (hostname)</dt><dd><code><%= web.hostname %></code></dd></div>
+      <div><dt>Imagen</dt><dd><code><%= web.imagen %></code></dd></div>
+      <div><dt>Versión de la app</dt><dd><%= web.version %></dd></div>
+      <div><dt>Imagen construida</dt><dd><%= web.construidaEn %></dd></div>
+      <div><dt>Node.js</dt><dd><%= web.node %></dd></div>
+      <div><dt>Sistema</dt><dd><%= web.so %></dd></div>
+      <div><dt>Usuario del proceso</dt><dd><%= web.usuario %></dd></div>
+      <div><dt>PID</dt><dd><%= web.pid %></dd></div>
+      <div><dt>Activo desde hace</dt><dd><%= web.activoDesde %></dd></div>
+      <div><dt>Memoria usada</dt><dd><%= web.memoriaProceso %> de <%= web.limiteMemoria %></dd></div>
+      <div><dt>Límite de CPU (cgroups)</dt><dd><%= web.limiteCpu %></dd></div>
+      <div><dt>IP en la red de Docker</dt><dd><code><%= web.ipsContenedor.join(', ') || 'sin dato' %></code></dd></div>
+      <div><dt>Servicio de base de datos</dt><dd><code><%= web.servicioDb %></code> resuelve a <code><%= web.ipDb %></code></dd></div>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2>Contenedor db</h2>
+    <p class="estado estado--ok">Conexión activa con MySQL</p>
+    <dl class="ficha">
+      <div><dt>ID del contenedor (hostname)</dt><dd><code><%= servidorDb.hostname %></code></dd></div>
+      <div><dt>Versión</dt><dd>MySQL <%= servidorDb.version %></dd></div>
+      <div><dt>Base de datos</dt><dd><code><%= servidorDb.base %></code></dd></div>
+      <div><dt>Usuario conectado</dt><dd><code><%= servidorDb.usuario %></code></dd></div>
+      <div><dt>Juego de caracteres</dt><dd><%= servidorDb.charset %></dd></div>
+      <div><dt>Zona horaria</dt><dd><%= servidorDb.zona_horaria %></dd></div>
+      <div><dt>Puerto interno</dt><dd><%= servidorDb.puerto %></dd></div>
+    </dl>
+    <h3>Permisos de la aplicación</h3>
+    <p class="nota">Mínimo privilegio: la app puede leer y escribir filas, pero no crear ni borrar tablas.</p>
+    <ul class="permisos">
+      <% servidorDb.permisos.forEach((p) => { %><li><code><%= p %></code></li><% }) %>
+    </ul>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Objetos de la base de datos</h2>
+  <div class="tabla-desplazable">
+    <table class="tabla">
+      <thead><tr><th scope="col">Objeto</th><th scope="col">Tipo</th><th scope="col" class="num">Filas (estimadas)</th><th scope="col" class="num">Tamaño</th></tr></thead>
+      <tbody>
+        <% servidorDb.tablas.forEach((t) => { %>
+          <tr><td><code><%= t.tabla %></code></td><td><%= t.tipo === 'VIEW' ? 'Vista' : 'Tabla' %></td><td class="num"><%= t.filas_aprox ?? '' %></td><td class="num"><%= t.kb != null ? t.kb + ' KB' : '' %></td></tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <h3>Columnas y tipos de datos</h3>
+  <div class="tabla-desplazable">
+    <table class="tabla tabla--compacta">
+      <thead><tr><th scope="col">Tabla</th><th scope="col">Columna</th><th scope="col">Tipo</th><th scope="col">Llave</th><th scope="col">Admite nulo</th></tr></thead>
+      <tbody>
+        <% servidorDb.columnas.forEach((c) => { %>
+          <tr><td><code><%= c.tabla %></code></td><td><code><%= c.columna %></code></td><td><code><%= c.tipo %></code></td><td><%= c.llave === 'PRI' ? 'Primaria' : Number(c.es_fk) ? 'Foránea' : c.llave === 'UNI' ? 'Única' : c.llave === 'MUL' ? 'Índice' : '' %></td><td><%= c.nulo === 'YES' ? 'Sí' : 'No' %></td></tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<p class="nota-pie">Los mismos datos en JSON: <a href="/api/sistema">/api/sistema</a>. Salud: <a href="/health">/health</a> y <a href="/ready">/ready</a>.</p>
+<%- include('partials/pie') %>

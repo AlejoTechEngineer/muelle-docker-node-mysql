@@ -1,0 +1,101 @@
+<%- include('partials/cabeza') %>
+<% const dinero = (v) => Number(v).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); %>
+<div class="encabezado-pagina encabezado-pagina--con-patio">
+  <div>
+    <h1>Registros en MySQL</h1>
+    <p>Lectura en vivo de las tablas <code>aplicaciones</code> y <code>despliegues</code> (esta última a través de la vista <code>v_despliegues_detalle</code>, que une ambas tablas por la llave foránea).</p>
+  </div>
+  <div class="encabezado-pagina__patio">
+    <p class="cifra cifra--pequena"><strong><%= resumen.total %></strong> registros en total</p>
+    <%- include('partials/patio') %>
+  </div>
+</div>
+
+<div class="buscador">
+  <label for="filtro">Filtrar filas</label>
+  <input id="filtro" type="search" placeholder="Escribe un código, nombre o entorno" data-filtro autocomplete="off">
+</div>
+
+<section class="panel" id="aplicaciones" aria-labelledby="t-apps">
+  <div class="panel__cabecera">
+    <h2 id="t-apps">Aplicaciones <span class="conteo"><%= aplicaciones.length %></span></h2>
+    <a href="/aplicaciones/nueva">Registrar otra</a>
+  </div>
+  <% if (aplicaciones.length === 0) { %>
+    <p class="vacio">La tabla está vacía. <a href="/aplicaciones/nueva">Registra la primera aplicación</a>.</p>
+  <% } else { %>
+  <div class="tabla-desplazable">
+    <table class="tabla" data-filtrable>
+      <thead>
+        <tr>
+          <th scope="col" class="num">id</th><th scope="col">Código</th><th scope="col">Nombre</th>
+          <th scope="col">Lanzamiento</th><th scope="col">Crítica</th><th scope="col" class="num">Costo mensual</th>
+          <th scope="col">Registrada</th><th scope="col" class="num">Despliegues</th><th scope="col"><span class="oculto">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% aplicaciones.forEach((a) => { %>
+          <tr>
+            <td class="num"><%= a.id %></td>
+            <td><code><%= a.codigo %></code></td>
+            <td><%= a.nombre %></td>
+            <td><time datetime="<%= a.fecha_lanzamiento %>"><%= a.fecha_lanzamiento %></time></td>
+            <td><span class="booleano booleano--<%= a.es_critica ? 'si' : 'no' %>"><%= a.es_critica ? 'Sí' : 'No' %></span></td>
+            <td class="num">USD <%= dinero(a.costo_mensual) %></td>
+            <td><%= a.creado_en %></td>
+            <td class="num"><%= a.total_despliegues %></td>
+            <td>
+              <form method="post" action="/aplicaciones/<%= a.id %>/eliminar" data-confirmar="¿Eliminar la aplicación <%= a.codigo %>?">
+                <input type="hidden" name="codigo" value="<%= a.codigo %>">
+                <button class="boton-eliminar" type="submit" aria-label="Eliminar aplicación <%= a.codigo %>">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+
+<section class="panel" id="despliegues" aria-labelledby="t-desp">
+  <div class="panel__cabecera">
+    <h2 id="t-desp">Despliegues <span class="conteo"><%= despliegues.length %></span></h2>
+    <a href="/despliegues/nuevo">Registrar otro</a>
+  </div>
+  <% if (despliegues.length === 0) { %>
+    <p class="vacio">La tabla está vacía. <a href="/despliegues/nuevo">Registra el primer despliegue</a>.</p>
+  <% } else { %>
+  <div class="tabla-desplazable">
+    <table class="tabla" data-filtrable>
+      <thead>
+        <tr>
+          <th scope="col" class="num">id</th><th scope="col">Aplicación</th><th scope="col">Entorno</th>
+          <th scope="col" class="num">Réplicas</th><th scope="col">Uso de CPU</th><th scope="col">Desplegado</th>
+          <th scope="col">Notas</th><th scope="col"><span class="oculto">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% despliegues.forEach((d) => { %>
+          <tr>
+            <td class="num"><%= d.id %></td>
+            <td><code><%= d.codigo_aplicacion %></code> <%= d.aplicacion %></td>
+            <td><span class="entorno entorno--<%= d.entorno %>"><%= d.entorno === 'produccion' ? 'producción' : d.entorno %></span></td>
+            <td class="num"><%= d.replicas %></td>
+            <td class="cpu"><progress max="100" value="<%= d.uso_cpu %>" aria-label="Uso de CPU"></progress> <span><%= d.uso_cpu %> %</span></td>
+            <td><time datetime="<%= d.desplegado_en.replace(' ', 'T') %>"><%= d.desplegado_en.slice(0, 16) %></time></td>
+            <td class="notas"><%= d.notas || '' %></td>
+            <td>
+              <form method="post" action="/despliegues/<%= d.id %>/eliminar" data-confirmar="¿Eliminar el despliegue #<%= d.id %>?">
+                <button class="boton-eliminar" type="submit" aria-label="Eliminar despliegue <%= d.id %>">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+<p class="nota-pie">También en JSON: <a href="/api/aplicaciones">/api/aplicaciones</a> y <a href="/api/despliegues">/api/despliegues</a>.</p>
+<%- include('partials/pie') %>

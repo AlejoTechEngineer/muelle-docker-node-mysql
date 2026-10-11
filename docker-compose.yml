@@ -1,0 +1,80 @@
+# =============================================================================
+#  Muelle: orquestación local con Docker Compose
+#
+#    docker compose up -d --build     construye las dos imágenes y arranca todo
+#    http://localhost:8080             interfaz web
+#
+#  Dos servicios, dos redes, un volumen:
+#    web  -> red "frontal" (publica el puerto) + red "interna" (habla con db)
+#    db   -> solo red "interna", que es privada: MySQL no queda expuesto
+#    muelle_datos -> volumen con nombre: los datos sobreviven a "down"
+# =============================================================================
+name: muelle
+
+services:
+  db:
+    build:
+      context: ./database
+    image: muelle-db:1.0.0
+    container_name: muelle-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-Muelle_Root_2026}
+      MYSQL_DATABASE: muelle
+      MYSQL_USER: ${DB_USER:-muelle_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Muelle_App_2026}
+    volumes:
+      - muelle_datos:/var/lib/mysql
+    networks:
+      - interna
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1g
+
+  web:
+    build:
+      context: ./web
+    image: muelle-web:1.0.0
+    container_name: muelle-web
+    init: true                     # tini como PID 1: reenvía señales y recoge procesos
+    environment:
+      DB_HOST: db                  # nombre del servicio = nombre DNS en la red de Docker
+      DB_PORT: 3306
+      DB_NAME: muelle
+      DB_USER: ${DB_USER:-muelle_app}
+      DB_PASSWORD: ${DB_PASSWORD:-Muelle_App_2026}
+      META_REGISTROS: 15
+    ports:
+      - "${WEB_PORT:-8080}:3000"
+    depends_on:
+      db:
+        condition: service_healthy # espera a que MySQL esté listo, no solo iniciado
+    networks:
+      - frontal
+      - interna
+    restart: unless-stopped
+    read_only: true                # sistema de archivos de solo lectura
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL                        # sin capacidades del kernel
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256m
+
+volumes:
+  muelle_datos:
+    name: muelle_datos
+
+networks:
+  frontal:
+    name: muelle_frontal
+  interna:
+    name: muelle_interna
+    internal: true                 # sin salida a Internet ni puertos publicados

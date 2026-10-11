@@ -1,0 +1,76 @@
+<%- include('partials/cabeza') %>
+<div class="encabezado-pagina">
+  <h1>Registrar aplicación</h1>
+  <p>Tabla padre <code>aplicaciones</code>. Una aplicación puede tener muchos despliegues.</p>
+</div>
+
+<div class="dos-columnas">
+  <form class="formulario panel" method="post" action="/aplicaciones" novalidate data-formulario="aplicacion">
+    <% if (errores._general) { %><p class="error-general" role="alert"><%= errores._general %></p><% } %>
+
+    <div class="campo <%= errores.nombre ? 'campo--error' : '' %>">
+      <label for="nombre">Nombre</label>
+      <input id="nombre" name="nombre" type="text" required minlength="3" maxlength="80" autocomplete="off"
+             value="<%= valores.nombre %>" placeholder="Pasarela de pagos" aria-describedby="nombre-ayuda<%= errores.nombre ? ' nombre-error' : '' %>">
+      <small id="nombre-ayuda">De 3 a 80 caracteres. No se puede repetir.</small>
+      <% if (errores.nombre) { %><p class="campo__error" id="nombre-error"><%= errores.nombre %></p><% } %>
+    </div>
+
+    <div class="fila">
+      <div class="campo <%= errores.codigo ? 'campo--error' : '' %>">
+        <label for="codigo">Código</label>
+        <input id="codigo" name="codigo" type="text" required minlength="6" maxlength="6" pattern="[A-Za-z0-9]{6}" autocomplete="off"
+               class="mono mayusculas" value="<%= valores.codigo %>" placeholder="PAGOS1" aria-describedby="codigo-ayuda<%= errores.codigo ? ' codigo-error' : '' %>">
+        <small id="codigo-ayuda">Exactamente 6 letras o números.</small>
+        <% if (errores.codigo) { %><p class="campo__error" id="codigo-error"><%= errores.codigo %></p><% } %>
+      </div>
+
+      <div class="campo <%= errores.fecha_lanzamiento ? 'campo--error' : '' %>">
+        <label for="fecha_lanzamiento">Fecha de lanzamiento</label>
+        <input id="fecha_lanzamiento" name="fecha_lanzamiento" type="date" required min="2000-01-01" max="2100-12-31"
+               value="<%= valores.fecha_lanzamiento %>" <% if (errores.fecha_lanzamiento) { %>aria-describedby="fecha-error"<% } %>>
+        <% if (errores.fecha_lanzamiento) { %><p class="campo__error" id="fecha-error"><%= errores.fecha_lanzamiento %></p><% } %>
+      </div>
+    </div>
+
+    <div class="fila">
+      <div class="campo <%= errores.costo_mensual ? 'campo--error' : '' %>">
+        <label for="costo_mensual">Costo mensual (USD)</label>
+        <input id="costo_mensual" name="costo_mensual" type="number" required min="0" max="99999999.99" step="0.01" inputmode="decimal"
+               value="<%= valores.costo_mensual %>" placeholder="120.50" <% if (errores.costo_mensual) { %>aria-describedby="costo-error"<% } %>>
+        <% if (errores.costo_mensual) { %><p class="campo__error" id="costo-error"><%= errores.costo_mensual %></p><% } %>
+      </div>
+
+      <div class="campo campo--interruptor">
+        <input id="es_critica" name="es_critica" type="checkbox" role="switch" <%= valores.es_critica ? 'checked' : '' %>>
+        <label for="es_critica">Es crítica para el negocio</label>
+        <small>Si falla, afecta a clientes o ingresos.</small>
+      </div>
+    </div>
+
+    <div class="formulario__acciones">
+      <button class="boton boton--primario" type="submit">Guardar aplicación</button>
+      <button class="boton boton--texto" type="button" data-autocompletar="aplicacion">Usar datos de ejemplo</button>
+    </div>
+  </form>
+
+  <aside class="panel panel--lateral" aria-label="Estructura de la tabla">
+    <h2>Lo que se guarda</h2>
+    <table class="esquema">
+      <thead><tr><th scope="col">Columna</th><th scope="col">Tipo MySQL</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>INT, llave primaria, autoincremental</td></tr>
+        <tr><td><code>nombre</code></td><td>VARCHAR(80), único</td></tr>
+        <tr><td><code>codigo</code></td><td>CHAR(6), único</td></tr>
+        <tr><td><code>fecha_lanzamiento</code></td><td>DATE</td></tr>
+        <tr><td><code>es_critica</code></td><td>BOOLEAN</td></tr>
+        <tr><td><code>costo_mensual</code></td><td>DECIMAL(10,2)</td></tr>
+        <tr><td><code>creado_en</code></td><td>TIMESTAMP, lo pone MySQL</td></tr>
+      </tbody>
+    </table>
+    <p class="cifra cifra--pequena"><strong><%= resumen.total %></strong> <%= resumen.total >= app.metaRegistros ? 'registros guardados' : `de ${app.metaRegistros} registros`  %></p>
+    <%- include('partials/patio') %>
+    <p><a href="/despliegues/nuevo">Registrar un despliegue</a> o <a href="/registros">ver lo guardado</a>.</p>
+  </aside>
+</div>
+<%- include('partials/pie') %>

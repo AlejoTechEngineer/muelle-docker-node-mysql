@@ -1,0 +1,25 @@
+# ==== Material académico: SOLO LOCAL, nunca al repo ====
+material-academico/
+*.pdf
+*.docx
+*.doc
+*.pptx
+*.xlsx
+*.zip
+~$*
+
+# ==== Node ====
+node_modules/
+npm-debug.log*
+
+# ==== Entorno y secretos ====
+.env
+.env.*
+!.env.example
+
+# ==== Editor / SO / herramientas ====
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db

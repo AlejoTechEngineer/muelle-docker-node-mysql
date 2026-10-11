@@ -1,0 +1,93 @@
+<%- include('partials/cabeza') %>
+<div class="encabezado-pagina">
+  <h1>Registrar despliegue</h1>
+  <p>Tabla hija <code>despliegues</code>. Cada despliegue apunta a una aplicación mediante la llave foránea <code>aplicacion_id</code>.</p>
+</div>
+
+<div class="dos-columnas">
+  <% if (aplicaciones.length === 0) { %>
+    <div class="panel vacio">
+      <p>Para registrar un despliegue primero necesitas una aplicación: la llave foránea no admite despliegues huérfanos.</p>
+      <a class="boton boton--primario" href="/aplicaciones/nueva">Registrar aplicación</a>
+    </div>
+  <% } else { %>
+  <form class="formulario panel" method="post" action="/despliegues" novalidate data-formulario="despliegue">
+    <% if (errores._general) { %><p class="error-general" role="alert"><%= errores._general %></p><% } %>
+
+    <div class="fila">
+      <div class="campo <%= errores.aplicacion_id ? 'campo--error' : '' %>">
+        <label for="aplicacion_id">Aplicación</label>
+        <select id="aplicacion_id" name="aplicacion_id" required <% if (errores.aplicacion_id) { %>aria-describedby="app-error"<% } %>>
+          <option value="">Elige una aplicación</option>
+          <% aplicaciones.forEach((a) => { %>
+            <option value="<%= a.id %>" data-codigo="<%= a.codigo %>" <%= String(valores.aplicacion_id) === String(a.id) ? 'selected' : '' %>><%= a.codigo %>, <%= a.nombre %></option>
+          <% }) %>
+        </select>
+        <% if (errores.aplicacion_id) { %><p class="campo__error" id="app-error"><%= errores.aplicacion_id %></p><% } %>
+      </div>
+
+      <fieldset class="campo <%= errores.entorno ? 'campo--error' : '' %>">
+        <legend>Entorno</legend>
+        <div class="segmentado">
+          <% entornos.forEach((e) => { %>
+            <input type="radio" id="entorno-<%= e %>" name="entorno" value="<%= e %>" required <%= valores.entorno === e ? 'checked' : '' %>>
+            <label for="entorno-<%= e %>" class="entorno-opcion entorno-opcion--<%= e %>"><%= e === 'produccion' ? 'Producción' : e.charAt(0).toUpperCase() + e.slice(1) %></label>
+          <% }) %>
+        </div>
+        <% if (errores.entorno) { %><p class="campo__error"><%= errores.entorno %></p><% } %>
+      </fieldset>
+    </div>
+
+    <div class="fila fila--tres">
+      <div class="campo <%= errores.replicas ? 'campo--error' : '' %>">
+        <label for="replicas">Réplicas</label>
+        <input id="replicas" name="replicas" type="number" required min="1" max="100" step="1" inputmode="numeric" value="<%= valores.replicas %>">
+        <small>Contenedores, de 1 a 100.</small>
+        <% if (errores.replicas) { %><p class="campo__error"><%= errores.replicas %></p><% } %>
+      </div>
+      <div class="campo <%= errores.uso_cpu ? 'campo--error' : '' %>">
+        <label for="uso_cpu">Uso de CPU (%)</label>
+        <input id="uso_cpu" name="uso_cpu" type="number" required min="0" max="100" step="any" inputmode="decimal" value="<%= valores.uso_cpu %>" placeholder="37.5">
+        <small>Promedio observado.</small>
+        <% if (errores.uso_cpu) { %><p class="campo__error"><%= errores.uso_cpu %></p><% } %>
+      </div>
+      <div class="campo <%= errores.desplegado_en ? 'campo--error' : '' %>">
+        <label for="desplegado_en">Fecha y hora</label>
+        <input id="desplegado_en" name="desplegado_en" type="datetime-local" required value="<%= valores.desplegado_en %>">
+        <% if (errores.desplegado_en) { %><p class="campo__error"><%= errores.desplegado_en %></p><% } %>
+      </div>
+    </div>
+
+    <div class="campo <%= errores.notas ? 'campo--error' : '' %>">
+      <label for="notas">Notas <span class="opcional">(opcional)</span></label>
+      <textarea id="notas" name="notas" rows="3" maxlength="2000" placeholder="v2.4.0: nuevo flujo de reembolsos"><%= valores.notas || '' %></textarea>
+      <% if (errores.notas) { %><p class="campo__error"><%= errores.notas %></p><% } %>
+    </div>
+
+    <div class="formulario__acciones">
+      <button class="boton boton--primario" type="submit">Guardar despliegue</button>
+      <button class="boton boton--texto" type="button" data-autocompletar="despliegue">Usar datos de ejemplo</button>
+    </div>
+  </form>
+  <% } %>
+
+  <aside class="panel panel--lateral" aria-label="Estructura de la tabla">
+    <h2>Lo que se guarda</h2>
+    <table class="esquema">
+      <thead><tr><th scope="col">Columna</th><th scope="col">Tipo MySQL</th></tr></thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>BIGINT, llave primaria, autoincremental</td></tr>
+        <tr><td><code>aplicacion_id</code></td><td>INT, llave foránea</td></tr>
+        <tr><td><code>entorno</code></td><td>ENUM de tres valores</td></tr>
+        <tr><td><code>replicas</code></td><td>SMALLINT</td></tr>
+        <tr><td><code>uso_cpu</code></td><td>DOUBLE</td></tr>
+        <tr><td><code>desplegado_en</code></td><td>DATETIME</td></tr>
+        <tr><td><code>notas</code></td><td>TEXT</td></tr>
+      </tbody>
+    </table>
+    <p class="cifra cifra--pequena"><strong><%= resumen.total %></strong> <%= resumen.total >= app.metaRegistros ? 'registros guardados' : `de ${app.metaRegistros} registros`  %></p>
+    <%- include('partials/patio') %>
+    <p><a href="/registros">Ver lo guardado en MySQL</a></p>
+  </aside>
+</div>
+<%- include('partials/pie') %>

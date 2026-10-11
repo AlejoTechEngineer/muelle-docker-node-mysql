@@ -1,0 +1,51 @@
+<%- include('partials/cabeza') %>
+<section class="portada">
+  <div class="portada__texto">
+    <h1 class="titular">Registro de aplicaciones y despliegues</h1>
+    <p class="entradilla">Cada aplicación y cada despliegue que guardas queda en MySQL, dentro de su propio contenedor. Esta página la sirve Node.js desde otro contenedor, conectado a la base de datos por una red interna de Docker.</p>
+    <div class="acciones">
+      <a class="boton boton--primario" href="/aplicaciones/nueva">Registrar aplicación</a>
+      <a class="boton" href="/despliegues/nuevo">Registrar despliegue</a>
+      <a class="boton boton--texto" href="/registros">Ver registros guardados</a>
+    </div>
+  </div>
+  <div class="portada__patio">
+    <p class="cifra"><strong><%= resumen.total %></strong> <%= resumen.total >= app.metaRegistros ? 'registros guardados' : `de ${app.metaRegistros} registros`  %></p>
+    <%- include('partials/patio') %>
+  </div>
+</section>
+
+<section class="indicadores" aria-label="Indicadores">
+  <dl>
+    <div><dt>Aplicaciones críticas</dt><dd><%= resumen.criticas %></dd></div>
+    <div><dt>Despliegues en producción</dt><dd><%= resumen.enProduccion %></dd></div>
+    <div><dt>Réplicas en total</dt><dd><%= resumen.contenedores %></dd></div>
+    <div><dt>CPU promedio</dt><dd><%= resumen.cpuPromedio %> %</dd></div>
+    <div><dt>Costo mensual</dt><dd>USD <%= resumen.costoTotal.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></dd></div>
+  </dl>
+</section>
+
+<section class="panel">
+  <div class="panel__cabecera">
+    <h2>Últimos despliegues</h2>
+    <a href="/registros#despliegues">Ver todos</a>
+  </div>
+  <% if (recientes.length === 0) { %>
+    <div class="vacio">
+      <p>Todavía no hay despliegues. Primero registra una aplicación y luego su primer despliegue.</p>
+      <a class="boton boton--primario" href="/aplicaciones/nueva">Registrar la primera aplicación</a>
+    </div>
+  <% } else { %>
+    <ol class="linea-tiempo">
+      <% recientes.forEach((d) => { %>
+        <li>
+          <span class="entorno entorno--<%= d.entorno %>"><%= d.entorno === 'produccion' ? 'producción' : d.entorno %></span>
+          <span class="linea-tiempo__app"><code><%= d.codigo_aplicacion %></code> <%= d.aplicacion %></span>
+          <span class="linea-tiempo__meta"><%= d.replicas %> <%= d.replicas === 1 ? 'réplica' : 'réplicas' %>, CPU <%= d.uso_cpu %> %</span>
+          <time datetime="<%= d.desplegado_en.replace(' ', 'T') %>"><%= d.desplegado_en.slice(0, 16) %></time>
+        </li>
+      <% }) %>
+    </ol>
+  <% } %>
+</section>
+<%- include('partials/pie') %>

@@ -1,0 +1,22 @@
+<%#
+  Patio de contenedores: cada registro guardado en MySQL es un bloque.
+  Recibe: resumen (aplicaciones, despliegues, total) y app.metaRegistros.
+  Con más de 40 registros se dibujan 40 bloques y se indica el resto.
+%>
+<% const meta = app.metaRegistros;
+   const tope = 40;
+   const vacios = Math.max(meta - resumen.total, 0);
+   const apps = Math.min(resumen.aplicaciones, tope);
+   const desps = Math.min(resumen.despliegues, tope - apps);
+   const resto = resumen.total - apps - desps; %>
+<div class="patio<%= resumen.total > meta ? ' patio--denso' : '' %>" role="img" aria-label="<%= resumen.total %> registros guardados de una meta de <%= meta %>: <%= resumen.aplicaciones %> aplicaciones y <%= resumen.despliegues %> despliegues">
+  <% for (let i = 0; i < apps; i++) { %><span class="bloque bloque--app<%= (desps === 0 && i === apps - 1) ? ' bloque--ultimo' : '' %>"></span><% } %>
+  <% for (let i = 0; i < desps; i++) { %><span class="bloque bloque--desp<%= i === desps - 1 ? ' bloque--ultimo' : '' %>"></span><% } %>
+  <% for (let i = 0; i < vacios; i++) { %><span class="bloque bloque--vacio"></span><% } %>
+  <% if (resto > 0) { %><p class="patio__mas">y <%= resto %> registros más</p><% } %>
+</div>
+<p class="patio__leyenda">
+  <span class="ley ley--app"><%= resumen.aplicaciones %> aplicaciones</span>
+  <span class="ley ley--desp"><%= resumen.despliegues %> despliegues</span>
+  <% if (vacios) { %><span class="ley ley--vacio">faltan <%= vacios %> para la meta de <%= meta %></span><% } else { %><span class="ley ley--meta">meta de <%= meta %> registros cumplida</span><% } %>
+</p>
